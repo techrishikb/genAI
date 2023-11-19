@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PDF File Upload</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Upload PDF Files</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" name="pdf_files" accept=".pdf" multiple>
+        <input type="button" value="Upload" onclick="uploadFiles()">
+    </form>
+    <button id="processButton" style="display: none;" onclick="processFiles()">Process</button>
+    <div id="output"></div>
+
+    <script>
+        function uploadFiles() {
+            const formData = new FormData();
+            const fileInput = document.querySelector('input[type="file"]');
+            const files = fileInput.files;
+
+            for (let i = 0; i < files.length; i++) {
+                formData.append('pdf_files', files[i]);
+            }
+
+            $.ajax({
+                url: '/upload',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function () {
+                    $("#processButton").show();
+                    alert('Files uploaded successfully!');
+                }
+            });
+        }
+
+        function processFiles() {
+            $.ajax({
+                url: '/process',
+                type: 'GET',
+                success: function (data) {
+                    // Clear previous output
+                    $("#output").empty();
+
+                    // Display chunks in the output div
+                    Object.entries(data).forEach(([filename, chunks]) => {
+                        $("#output").append(`<h3>${filename}</h3>`);
+                        chunks.forEach(chunk => {
+                            $("#output").append(`<p>${chunk}</p>`);
+                        });
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>
